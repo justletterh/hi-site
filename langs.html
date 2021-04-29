@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Repository Languages</title>
+        <style>
+            body {
+            text-align: center;
+            background-color: #000000;
+            color: #FFFFFF;
+            padding-top: 2.5%;
+            }
+            a {
+            color: #FFFFFF;
+            }
+            a:hover {
+            color: #969696;
+            }
+            ul {
+            list-style: none;
+            font-weight: bold;
+            font-size: larger;
+            }
+            ul li::before {
+            content: "\2022";
+            color: #FFFFFF;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            font-size: larger;
+            margin-left: -1em;
+            }
+        </style>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@2/dist/Chart.min.css">
+        <link rel="icon" href="https://github.com/justletterh/assets/raw/master/turt.jpg">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2/dist/Chart.bundle.min.js"></script>
+        <script src="https://quickutils.github.io/language-colors/language-colors.js"></script>
+    </head>
+    <body>
+        <h1>Language Distribution</h1>
+        <canvas id="pie" width="750" height="250"></canvas>
+        <h3><a href="index.html">Back</a></h3>
+        <br>
+        <hr>
+        <h6>&#169;2021 <a href="https://github.com/justletterh" target="_blank">Letter h</a></h6>
+        <script>
+            var ctx=document.getElementById('pie');
+            function todat(l){
+                var o={backgroundColor:'#FFFFFF',datasets:[{data:[],backgroundColor:[]}],labels:[]};
+                l.forEach(function(i){
+                    o.datasets[0].data.push(i.data);
+                    o.datasets[0].backgroundColor.push(i.color);
+                    o.labels.push(i.label);
+                });
+                return o;
+            }
+            function procresp(r){
+                var o=[];
+                for (i in r){
+                    o.push({label:i.toLowerCase(),color:LanguageColors[i.toLowerCase()],data:r[i]});
+                }
+                return o;
+            }
+            function updatechart(resp){
+                var items=procresp(resp);
+                var myPieChart=new Chart(ctx, {
+                    type: 'pie',
+                    data: todat(items),
+                    options: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                fontColor: '#FFFFFF',
+                                generateLabels: function(i){
+                                    var o=[];
+                                    var count=0;
+                                    i.data.labels.forEach(function(ii){
+                                        var value=i.data.datasets[0].data[count];
+                                        var sum=i.data.datasets[0].data.reduce(function(a, b){return a + b;},0);
+                                        value=(Math.round(((value/sum)*100)*100)/100);
+                                        o.push({text:`${ii}: ${value}%`,fillStyle:i.data.datasets[0].backgroundColor[count],lineWidth:2,strokeStyle:"#FFFFFF"});
+                                        count=count+1;
+                                    });
+                                    return o;
+                                }
+                            }
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function(i,data){
+                                    var value=data.datasets[0].data[i.index];
+                                    var sum=data.datasets[0].data.reduce(function(a, b){return a + b;},0);
+                                    var o=`${data.labels[i.index]}: ${(Math.round(((value/sum)*100)*100)/100)}%`;
+                                    return o;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            const xhr=new XMLHttpRequest();
+            xhr.open('GET','https://api.github.com/repos/justletterh/hi-files/languages',true,null,null);
+            xhr.responseType='json';
+            xhr.onreadystatechange=function(){
+                if (xhr.readyState===4){
+                    updatechart(xhr.response);
+                }
+            }
+            xhr.send();
+                    
+        </script>
+    </body>
+</html>
